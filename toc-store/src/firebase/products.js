@@ -1,240 +1,95 @@
-// ─────────────────────────────────────────────
-//  Firestore Product Services
-// ─────────────────────────────────────────────
 import {
+  addDoc,
   collection,
   doc,
-  getDocs,
   getDoc,
-  query,
-  where,
+  getDocs,
   orderBy,
-  limit,
-  addDoc,
+  query,
   serverTimestamp,
+  where,
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
+import { MOCK_PRODUCTS } from '../utils/mockData';
 
 const PRODUCTS_COLLECTION = 'products';
 
-// Fetch all products
+const withStockDefaults = (product) => ({
+  inStock: true,
+  ...product,
+});
+
+const mockProducts = MOCK_PRODUCTS.map(withStockDefaults);
+
 export const getAllProducts = async () => {
+  if (!db) return mockProducts;
+
   try {
-    const q = query(collection(db, PRODUCTS_COLLECTION), orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const productsQuery = query(collection(db, PRODUCTS_COLLECTION), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(productsQuery);
+    return snapshot.docs.map((productDoc) => ({ id: productDoc.id, ...productDoc.data() }));
   } catch (error) {
     console.error('Error fetching products:', error);
-    return [];
+    return mockProducts;
   }
 };
 
-// Fetch products by category
 export const getProductsByCategory = async (category) => {
+  const fallback = mockProducts.filter((product) => product.category === category);
+  if (!db) return fallback;
+
   try {
-    const q = query(
+    const productsQuery = query(
       collection(db, PRODUCTS_COLLECTION),
       where('category', '==', category)
     );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const snapshot = await getDocs(productsQuery);
+    return snapshot.docs.map((productDoc) => ({ id: productDoc.id, ...productDoc.data() }));
   } catch (error) {
     console.error('Error fetching products by category:', error);
-    return [];
+    return fallback;
   }
 };
 
-// Fetch single product by ID
 export const getProductById = async (id) => {
+  const fallback = mockProducts.find((product) => product.id === id) || null;
+  if (!db) return fallback;
+
   try {
-    const docRef = doc(db, PRODUCTS_COLLECTION, id);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
-    }
-    return null;
+    const productRef = doc(db, PRODUCTS_COLLECTION, id);
+    const productSnap = await getDoc(productRef);
+    return productSnap.exists() ? { id: productSnap.id, ...productSnap.data() } : fallback;
   } catch (error) {
     console.error('Error fetching product:', error);
-    return null;
+    return fallback;
   }
 };
 
-// Fetch featured products (first 6)
 export const getFeaturedProducts = async () => {
-  console.log("🔥 getFeaturedProducts WAS CALLED");
+  const fallback = mockProducts.filter((product) => product.featured);
+  if (!db) return fallback;
 
-  const snapshot = await getDocs(collection(db, "products"));
-
-  console.log("🔥 FEATURED SNAPSHOT SIZE:", snapshot.size);
-
-  console.log(
-    "🔥 FEATURED DATA:",
-    snapshot.docs.map(doc => doc.data())
-  );
-
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  try {
+    const snapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+    return snapshot.docs
+      .map((productDoc) => ({ id: productDoc.id, ...productDoc.data() }))
+      .filter((product) => product.featured);
+  } catch (error) {
+    console.error('Error fetching featured products:', error);
+    return fallback;
+  }
 };
 
-// Seed sample products (run once from Firebase Console or a seed script)
 export const seedProducts = async () => {
-const sampleProducts = [
-  {
-    name: "Butterfly LED Light",
-    price: 12000,
-    category: "Room Decor",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "A delicate butterfly-shaped ambient light designed to create a warm, luxurious atmosphere. Perfect for bedside styling and aesthetic spaces.",
-    featured: true,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Velvet Touch Hand Cream",
-    price: 4500,
-    category: "Aesthetic Items",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "Rich hydration wrapped in elegance. Leaves hands soft, nourished, and delicately scented throughout the day.",
-    featured: true,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Executive Palm Trousers",
-    price: 18500,
-    category: "Corporate Wear",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "A refined wardrobe essential tailored for confidence and sophistication. Designed for effortless transitions between work and leisure.",
-    featured: true,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Luxury Lip Balm Collection",
-    price: 6500,
-    category: "Aesthetic Items",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "A curated set of nourishing lip balms crafted to keep lips soft, smooth, and beautifully moisturized.",
-    featured: true,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Crystal Perfume Bottle",
-    price: 9500,
-    category: "Fancy Bottles",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "An elegant decorative perfume bottle designed to elevate your vanity with timeless sophistication.",
-    featured: false,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Nordic Decorative Vase",
-    price: 13500,
-    category: "Room Decor",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "Minimalist luxury inspired by modern interiors. A statement piece for shelves, desks, and coffee tables.",
-    featured: false,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Glow-In-The-Dark Moon Lamp",
-    price: 15000,
-    category: "Room Decor",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "A calming moon-inspired lamp that brings a dreamy glow to your bedroom after sunset.",
-    featured: true,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Premium Tongue Scraper",
-    price: 3000,
-    category: "Aesthetic Items",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "An elegant self-care essential crafted for freshness and a refined daily wellness routine.",
-    featured: false,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Marble Brush Holder",
-    price: 7000,
-    category: "Room Decor",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "Beautifully crafted to keep your beauty tools organized while complementing modern interiors.",
-    featured: false,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Luxury Sheet Face Mask Set",
-    price: 5500,
-    category: "Aesthetic Items",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "A collection of rejuvenating face masks designed to leave skin refreshed, radiant, and deeply hydrated.",
-    featured: true,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Amber Oud Scented Candle",
-    price: 8500,
-    category: "Scented Candles",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "A sophisticated blend of amber and oud crafted to create a rich and inviting atmosphere.",
-    featured: true,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Minimalist Wall Collage Set",
-    price: 9500,
-    category: "Room Decor",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "Curated artwork prints designed to transform blank walls into a stylish visual statement.",
-    featured: false,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Designer Acrylic Key Holder",
-    price: 6000,
-    category: "Accessories",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "A chic everyday essential that keeps keys organized while adding elegance to your accessories.",
-    featured: false,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Portable Mini Fan",
-    price: 7500,
-    category: "Aesthetic Items",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "Compact, stylish, and practical. Designed to keep you cool while maintaining a sleek aesthetic.",
-    featured: true,
-    inStock: true,
-    createdAt: serverTimestamp(),
-  },
-  {
-    name: "Luxury Vanity Bottle Set",
-    price: 14000,
-    category: "Fancy Bottles",
-    image: "https://i.pinimg.com/736x/ef/c6/d4/efc6d433014f2f70f4cffd04fc14d007.jpg",
-    description: "Decorative refillable bottles crafted to bring elegance and organization to your beauty space.",
-    featured: false,
-    inStock: true,
-    createdAt: serverTimestamp(),
+  if (!db) {
+    throw new Error('Firebase is not configured. Add valid VITE_FIREBASE_* variables first.');
   }
-];
 
-  for (const product of sampleProducts) {
-    await addDoc(collection(db, PRODUCTS_COLLECTION), product);
+  for (const product of mockProducts) {
+    const { id, ...productData } = product;
+    await addDoc(collection(db, PRODUCTS_COLLECTION), {
+      ...productData,
+      createdAt: serverTimestamp(),
+    });
   }
-  console.log('✅ Products seeded to Firestore!');
 };

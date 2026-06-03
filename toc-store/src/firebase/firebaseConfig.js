@@ -15,9 +15,13 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+const hasValidFirebaseConfig = Object.values(firebaseConfig).every(Boolean)
+  && firebaseConfig.apiKey.startsWith('AIza')
+  && !firebaseConfig.apiKey.includes('your_');
 
-const app = initializeApp(firebaseConfig);
+const app = hasValidFirebaseConfig ? initializeApp(firebaseConfig) : null;
 
-export const db = getFirestore(app);
-export const auth = getAuth(app);
+export const isFirebaseConfigured = Boolean(app);
+export const db = app ? getFirestore(app) : null;
+export const auth = app ? getAuth(app) : null;
 export default app;
