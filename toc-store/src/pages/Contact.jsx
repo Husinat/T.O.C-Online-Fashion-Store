@@ -3,19 +3,33 @@
 // ─────────────────────────────────────────────
 import { useState } from 'react';
 import { SectionLabel, Button } from '../components/UI';
+import { sendEmail } from '../utils/sendEmail';
 
 const Contact = () => {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
   const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // No backend required — just show success state
-    setSubmitted(true);
-    setForm({ name: '', email: '', subject: '', message: '' });
-    setTimeout(() => setSubmitted(false), 5000);
+
+    try {
+      await sendEmail(form);
+
+      setSubmitted(true);
+      setForm({ name: '', email: '', subject: '', message: '' });
+
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (error) {
+      console.error('Email error:', error);
+      alert('Message failed to send. Try again.');
+    }
   };
 
   return (
@@ -60,18 +74,51 @@ const Contact = () => {
               <p className="font-sans text-xs tracking-widests uppercase text-toc-gold mb-4">
                 Follow us
               </p>
+
               <div className="flex flex-col gap-3">
-                {['Instagram', 'Twitter / X', 'Pinterest', 'TikTok'].map((s) => (
-                  <a
-                    key={s}
-                    href="#"
-                    className="font-sans text-sm text-toc-taupe hover:text-toc-charcoal transition-colors inline-flex items-center gap-2"
-                  >
-                    <span className="text-toc-gold text-xs">→</span>
-                    {s}
-                  </a>
-                ))}
+                <a
+                  href="https://instagram.com/yourusername"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-sans text-sm text-toc-taupe hover:text-toc-charcoal transition-colors inline-flex items-center gap-2"
+                >
+                  <span className="text-toc-gold text-xs">→</span>
+                  Instagram
+                </a>
+
+                <a
+                  href="https://x.com/yourusername"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-sans text-sm text-toc-taupe hover:text-toc-charcoal transition-colors inline-flex items-center gap-2"
+                >
+                  <span className="text-toc-gold text-xs">→</span>
+                  Twitter / X
+                </a>
+
+                <a
+                  href="https://wa.me/2347039541912?text=Hello%20TOC%20%E2%9C%A8%0A%0AI%20just%20visited%20your%20website%20and%20I'm%20interested%20in%20placing%20an%20order.%20I'd%20love%20to%20get%20more%20information%20about%20your%20products%20and%20availability.%0A%0AThank%20you."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-sans text-sm text-toc-taupe hover:text-toc-charcoal transition-colors inline-flex items-center gap-2"
+                >
+                  <span className="text-toc-gold text-xs">→</span>
+                  WhatsApp
+                </a>
+
+                <a
+                  href="https://tiktok.com/@yourusername"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-sans text-sm text-toc-taupe hover:text-toc-charcoal transition-colors inline-flex items-center gap-2"
+                >
+                  <span className="text-toc-gold text-xs">→</span>
+                  TikTok
+                </a>
               </div>
+
+
+
             </div>
           </div>
 
