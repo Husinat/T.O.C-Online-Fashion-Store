@@ -2,4 +2,4 @@ TOC - The Ola Collection is a responsive luxury lifestyle and fashion ecommerce 
 
 The application focuses on a refined storefront experience: editorial landing sections, category browsing, product search and sorting, detailed product pages, cart management, persistent local cart storage, and Firebase-backed product data.
 
-## More information about this website is in the ReadMe file in the toc-folder folder
+## More information about this website is in the ReadMe file in the toc- store folder
