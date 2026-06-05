@@ -8,6 +8,7 @@ import { useProducts } from '../hooks/useProducts';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
 import { Loader, Button, SectionLabel } from '../components/UI';
+import { productInfo } from '../utils/productInfo';
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(price);
@@ -15,6 +16,7 @@ const formatPrice = (price) =>
 const ProductDetail = () => {
   const { id } = useParams();
   const { product, loading } = useProduct(id);
+  const info = productInfo[product?.category] || productInfo.default;
   const { products } = useProducts();
   const { addToCart } = useCart();
   const [added, setAdded] = useState(false);
@@ -81,31 +83,30 @@ const ProductDetail = () => {
               {product.name}
             </h1>
 
-        <p className="font-sans text-2xl text-toc-brown mb-4">
-  {formatPrice(product.price)}
-</p>
+            <p className="font-sans text-2xl text-toc-brown mb-4">
+              {formatPrice(product.price)}
+            </p>
 
-<div className="flex flex-wrap gap-2 mb-6">
-  {product.featured && (
-    <span className="px-3 py-1 bg-toc-gold/20 text-toc-brown text-xs uppercase tracking-widest rounded-full">
-      Featured
-    </span>
-  )}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {product.featured && (
+                <span className="px-3 py-1 bg-toc-gold/20 text-toc-brown text-xs uppercase tracking-widest rounded-full">
+                  Featured
+                </span>
+              )}
 
 
-{/* INSTOCK COMMENTED OUT FOR NOW */}
-  <span
-    className={`px-3 py-1 text-xs uppercase tracking-widest rounded-full ${
-      product.inStock
-        ? 'bg-green-100 text-green-700'
-        : 'bg-red-100 text-red-700'
-    }`}
-  >
-    {product.inStock ? 'In Stock' : 'Out of Stock'}
-  </span>
-</div>
+              {/* INSTOCK BADGE */}
+              <span
+                className={`px-3 py-1 text-xs uppercase tracking-widest rounded-full ${product.inStock
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-red-100 text-red-700'
+                  }`}
+              >
+                {product.inStock ? 'In Stock' : 'Out of Stock'}
+              </span>
+            </div>
 
-<div className="w-8 h-px bg-toc-clay mb-8" />
+            <div className="w-8 h-px bg-toc-clay mb-8" />
 
             <p className="font-sans text-sm text-toc-taupe leading-relaxed mb-10">
               {product.description}
@@ -151,9 +152,9 @@ const ProductDetail = () => {
             {/* Details rows */}
             <div className="mt-10 border-t border-toc-sand pt-6 space-y-4">
               {[
-                { label: 'Care', detail: 'Dry clean or gentle machine wash. Do not tumble dry.' },
-                { label: 'Delivery', detail: 'Standard 3–5 business days. Express available at checkout.' },
-                { label: 'Returns', detail: '14-day return window. Unworn, tags attached.' },
+                { label: 'Care', detail: info.care },
+                { label: 'Delivery', detail: info.delivery },
+                { label: 'Returns', detail: info.returns },
               ].map(({ label, detail }) => (
                 <div key={label} className="flex gap-6 py-2 border-b border-toc-sand">
                   <span className="font-sans text-[10px] tracking-widest uppercase text-toc-gold w-16 flex-shrink-0 pt-0.5">
@@ -171,15 +172,15 @@ const ProductDetail = () => {
       {related.length > 0 && (
         <section className="bg-toc-warm py-16 md:py-24 border-t border-toc-sand">
           <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="mb-10">
-            <SectionLabel>You may also like</SectionLabel>
-            <h2 className="font-serif text-3xl font-light text-toc-charcoal">Related pieces</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-            {related.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+            <div className="mb-10">
+              <SectionLabel>You may also like</SectionLabel>
+              <h2 className="font-serif text-3xl font-light text-toc-charcoal">Related pieces</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
+              {related.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
           </div>
         </section>
       )}

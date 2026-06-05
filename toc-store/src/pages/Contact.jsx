@@ -13,6 +13,8 @@ const Contact = () => {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -20,6 +22,7 @@ const Contact = () => {
     e.preventDefault();
 
     try {
+      setSending(true);
       await sendEmail(form);
 
       setSubmitted(true);
@@ -29,6 +32,9 @@ const Contact = () => {
     } catch (error) {
       console.error('Email error:', error);
       alert('Message failed to send. Try again.');
+    }
+    finally {
+      setSending(false);
     }
   };
 
@@ -169,8 +175,7 @@ const Contact = () => {
                     value={form.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3.5 bg-toc-cream border border-toc-sand font-sans text-sm text-toc-charcoal focus:outline-none focus:border-toc-taupe transition-colors"
-                  >
+                    className="w-full px-4 py-3.5 bg-toc-cream border border-toc-sand font-sans text-sm text-toc-charcoal focus:outline-none focus:border-toc-taupe transition-colors">
                     <option value="">Select a topic</option>
                     <option>Order Enquiry</option>
                     <option>Product Question</option>
@@ -195,8 +200,8 @@ const Contact = () => {
                   />
                 </div>
 
-                <Button type="submit" size="lg" fullWidth>
-                  Send Message
+                <Button type="submit"size="lg"fullWidth disabled={sending}>
+                {sending ? 'Sending Message...' : 'Send Message'}
                 </Button>
               </form>
             )}

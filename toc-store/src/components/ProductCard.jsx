@@ -47,19 +47,20 @@ const ProductCard = ({ product }) => {
           {/* Overlay on hover */}
           <div className="absolute inset-0 bg-toc-charcoal/0 group-hover:bg-toc-charcoal/10 transition-all duration-500" />
 
-          {/* Quick add button */}
+
+          {/* Stock and add to cart badge */}
           <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-            <button
-              onClick={handleAddToCart}
-              className={`w-full py-3.5 font-sans text-xs tracking-widest uppercase transition-colors duration-300 ${
-                added
-                  ? 'bg-toc-gold text-toc-cream'
-                  : 'bg-toc-charcoal text-toc-cream hover:bg-toc-brown'
-              }`}
-            >
-              {added ? '✓ Added to cart' : 'Add to cart'}
-            </button>
+      <button onClick={handleAddToCart} disabled={!product.inStock} className={`w-full py-3.5 font-sans text-xs tracking-widest uppercase transition-colors duration-300
+    ${!product.inStock ? 'bg-gray-300 text-gray-500 cursor-not-allowed': added ? 'bg-toc-gold text-toc-cream': 'bg-toc-charcoal text-toc-cream hover:bg-toc-brown'}`}>
+  {!product.inStock
+    ? 'Out of Stock'
+    : added
+    ? '✓ Added to cart'
+    : 'Add to cart'}
+</button>
+
           </div>
+          
 
           {/* Category tag */}
           <div className="absolute top-3 left-3">
@@ -67,6 +68,20 @@ const ProductCard = ({ product }) => {
               {product.category}
             </span>
           </div>
+
+
+         {/* Stock badge */}
+      <div className="absolute top-3 right-3">
+  <span
+    className={`font-sans text-[9px] tracking-widest uppercase px-2 py-1 ${
+      product.inStock
+        ? 'bg-green-100 text-green-700'
+        : 'bg-red-100 text-red-700'
+    }`}
+  >
+    {product.inStock ? 'In Stock' : 'Out of Stock'}
+  </span>
+    </div>
         </div>
 
         {/* Product Info */}

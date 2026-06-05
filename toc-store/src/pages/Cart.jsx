@@ -4,12 +4,54 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { Button, SectionLabel } from '../components/UI';
+import { useState } from 'react';
+
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(price);
 
 const Cart = () => {
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice, totalItems } = useCart();
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+
+
+
+  // Proceed to checkout via Whatsapp page
+  const proceedToWhatsapp = () => {
+  const orderItems = items
+    .map(
+      (item) =>
+        `• ${item.name} × ${item.quantity} — ${formatPrice(
+          item.price * item.quantity
+        )}`
+    )
+    .join("\n");
+
+  const message = `Hello TOC ✨
+
+I would like to place an order for the following items:
+
+${orderItems}
+
+Order Total: ${formatPrice(totalPrice)}
+
+Please let me know:
+• Product availability
+• Delivery options
+• Payment details
+
+Thank you.`;
+
+  const whatsappUrl = `https://wa.me/2347039541912?text=${encodeURIComponent(
+    message
+  )}`;
+
+  window.open(whatsappUrl, "_blank");
+  setShowCheckoutModal(false);
+};
+
+
+
 
   if (items.length === 0) {
     return (
@@ -109,11 +151,11 @@ const Cart = () => {
                 </div>
 
                 {/* Remove */}
-<button
-  onClick={() => removeFromCart(item.id)}
-  className="self-start mt-1 px-2 py-1 text-[10px] tracking-widest uppercase border border-toc-sand text-toc-taupe hover:text-red-500 hover:border-red-300 transition-all duration-300 rounded-full">
-  Remove from cart
-</button>
+                <button
+                  onClick={() => removeFromCart(item.id)}
+                  className="self-start mt-1 px-2 py-1 text-[10px] tracking-widest uppercase border border-toc-sand text-toc-taupe hover:text-red-500 hover:border-red-300 transition-all duration-300 rounded-full">
+                  Remove from cart
+                </button>
               </div>
             ))}
           </div>
@@ -144,15 +186,14 @@ const Cart = () => {
                   <span className="font-sans text-xs text-toc-taupe">Calculated at checkout</span>
                 </div>
               </div>
-
-              <Button fullWidth size="lg">
-                Proceed to Checkout
-              </Button>
+              
+        <Button fullWidth size="lg"onClick={() => setShowCheckoutModal(true)}>
+         Proceed to Checkout
+        </Button>
 
               <Link
                 to="/shop"
-                className="block text-center font-sans text-xs tracking-widest uppercase text-toc-taupe hover:text-toc-charcoal transition-colors mt-4 py-2"
-              >
+                className="block text-center font-sans text-xs tracking-widest uppercase text-toc-taupe hover:text-toc-charcoal transition-colors mt-4 py-2">
                 Continue Shopping
               </Link>
 
@@ -169,6 +210,41 @@ const Cart = () => {
           </div>
         </div>
       </div>
+
+
+      {showCheckoutModal && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-6">
+    <div className="bg-toc-cream max-w-md w-full p-8 border border-toc-sand shadow-xl">
+      <h3 className="font-serif text-2xl text-toc-charcoal mb-3">
+        Ready to Complete Your Order?
+      </h3>
+
+      <p className="font-sans text-sm text-toc-taupe leading-relaxed mb-6">
+        You will be redirected to WhatsApp with your order summary pre-filled.
+        Please review the message before sending it.
+      </p>
+
+      <div className="flex gap-3">
+        <Button
+          variant="outline"
+          fullWidth
+          onClick={() => setShowCheckoutModal(false)}>
+          Cancel
+        </Button>
+
+        <Button
+          fullWidth
+          onClick={proceedToWhatsapp}
+        >
+          Continue
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
     </div>
   );
 };
